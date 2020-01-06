@@ -90,9 +90,9 @@ a_graph = Graph(connection_map)
 a_graph.DFS_search()
 
 
-def generate_tree_cost(tree, root_id=0):
-    tree_mat = [[0 for x in range(a_graph._node_num)]
-                for y in range(a_graph._node_num)]
+def generate_tree_cost(tree, root_id=0, node_nums=4):
+    tree_mat = [[0 for x in range(node_nums)]
+                for y in range(node_nums)]
     for each_link in tree:
         tree_mat[each_link[0]][each_link[1]] = 1
         tree_mat[each_link[1]][each_link[0]] = 1
@@ -101,12 +101,14 @@ def generate_tree_cost(tree, root_id=0):
     cost_node = {}
     visited = [root_id]
     layer = 1
+    cost_node[root_id] = 0
+
     while len(visited) != 0:
+        tmp_vis = []
         for each in visited:
-            tmp_vis = []
             root_link = tree_mat[each]
-            #print(each, root_link)
-            for dst in range(a_graph._node_num):
+            #print(each, root_link, cost_node, visited)
+            for dst in range(node_nums):
                 if root_link[dst] == 1:
                     #print("DST: ", dst)
                     if dst not in cost_node:
@@ -114,11 +116,14 @@ def generate_tree_cost(tree, root_id=0):
                         tmp_vis.append(dst)
         visited = tmp_vis
         layer += 1
-    cost_node[root_id] = 0
     return cost_node
 
 
 for each_tree in a_graph._reduce_tree:
-    tree_cost = generate_tree_cost(each_tree, 1)
+    tree_cost = generate_tree_cost(
+        each_tree, root_id=1, node_nums=a_graph._node_num)
     print(each_tree, " ----> ", tree_cost)
 print(len(a_graph._reduce_tree))
+# tree_cost = generate_tree_cost(
+#     [[0, 4], [1, 2], [1, 3], [2, 4]], root_id=1, node_nums=5)
+# print([[0, 4], [1, 2], [1, 3], [2, 4]], " ----> ", tree_cost)

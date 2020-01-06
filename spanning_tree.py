@@ -10,7 +10,7 @@ print(connection_map)
 
 for each in range(len(connection_map)):
     connection_map[each].remove(each)
-
+# connection_map = [[1, 2, 3], [0, 2], [0, 1, 3], [0, 2]]
 
 connection_map = np.array(connection_map)
 
@@ -28,6 +28,7 @@ class Graph(object):
         self.collecting_edges()
         self._count = 1
         self._previous = [x for x in range(self._node_num)]
+        self._reduce_tree = []
 
     def collecting_edges(self):
         for src in range(len(self._mat)):
@@ -46,7 +47,7 @@ class Graph(object):
 
     def DFS_search(self, index=0):
         if index >= len(self._edge):
-            #print("return, in the end")
+            # print("return, in the end")
             return
         # self.show_all()
         current_edge = self._edge[index]
@@ -56,7 +57,7 @@ class Graph(object):
         if root_a != root_b:  # current edge is the exact one expected, merge into one.
             self._tree.append(current_edge)
             if self.generate_final_tree():  # come to the end, and reverse
-                #print("search for the next, ", self._tree)
+                # print("search for the next, ", self._tree)
                 self._tree.pop()
                 self.DFS_search(index + 1)
                 return
@@ -72,10 +73,10 @@ class Graph(object):
 
     def generate_final_tree(self):
         if len(self._tree) == self._node_num - 1:  # generated a tree
-            print("Tree {}: ".format(self._count), end='')
-
+            # print("Tree {}: ".format(self._count), end='')
+            self._reduce_tree.append(self._tree.copy())
             self._count += 1
-            print(self._tree)
+            # print(self._tree)
             return True
         return False
 
@@ -87,3 +88,37 @@ class Graph(object):
 
 a_graph = Graph(connection_map)
 a_graph.DFS_search()
+
+
+def generate_tree_cost(tree, root_id=0):
+    tree_mat = [[0 for x in range(a_graph._node_num)]
+                for y in range(a_graph._node_num)]
+    for each_link in tree:
+        tree_mat[each_link[0]][each_link[1]] = 1
+        tree_mat[each_link[1]][each_link[0]] = 1
+
+    #root_id = 0
+    cost_node = {}
+    visited = [root_id]
+    layer = 1
+    while len(visited) != 0:
+        for each in visited:
+            tmp_vis = []
+            root_link = tree_mat[each]
+            #print(each, root_link)
+            for dst in range(a_graph._node_num):
+                if root_link[dst] == 1:
+                    #print("DST: ", dst)
+                    if dst not in cost_node:
+                        cost_node[dst] = layer
+                        tmp_vis.append(dst)
+        visited = tmp_vis
+        layer += 1
+    cost_node[root_id] = 0
+    return cost_node
+
+
+for each_tree in a_graph._reduce_tree:
+    tree_cost = generate_tree_cost(each_tree, 1)
+    print(each_tree, " ----> ", tree_cost)
+print(len(a_graph._reduce_tree))
